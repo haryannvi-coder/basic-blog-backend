@@ -39,26 +39,57 @@ router.post("/addBlog", authMiddleware, async (req, res) => {
         console.log(err);
         
         res.status(411).json({
-            msg : "Error saving user",
+            msg : "Error saving blog",
             error : err
         })
     }    
 })
 
 router.get("/getBlogs", async (req, res) => {
-    try{
-        console.log("blogs found");
-        const blogs = await Blog.find({});
-        console.log(blogs);
-        
+    const keyword = req.query.filter || "";
+
+    try {
+        // Fetch blogs based on the keyword
+        const blogs = await Blog.find({ 
+            $or: [{
+                title: {
+                    "$regex": keyword, // Correct regex syntax
+                    "$options": "i" // Case-insensitive search
+                }
+            }]
+        });
+
+        // Send the formatted blogs
         res.json(blogs);
-    }
-    catch(err){
+    } 
+    catch (error) {
+        // Send an error response
         res.status(400).json({ 
-            msg : "can't find blog",
-            message: err.message 
+            msg: "Can't find blogs",
+            message: error.message 
         });
     }
+});
+
+
+router.get("/readBlog", async (req, res) => {
+    try {
+        const blogId = req.query.blogId; 
+
+        const blog = await Blog.findById(blogId);
+
+        // Check if the blog exists
+        if (!blog) {
+            return res.status(404).json({ msg: "Blog not found" });
+        }
+
+        // Send the blog data as a JSON response
+        res.json(blog);
+    } catch (err) {
+        // Handle any errors that occur during the operation
+        res.status(500).json({ msg: "Server error", error: err.message });
+    }
+
 })
 
 module.exports = router

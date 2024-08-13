@@ -6,7 +6,7 @@ const Blog = require("../models/blog.model");
 const jwt = require("jsonwebtoken");
 
 const signupBody = zod.object({
-    email: zod.string().email(),
+    email: zod.string(),
     password: zod.string(),
     firstName: zod.string(),
     lastName: zod.string()
@@ -57,7 +57,7 @@ router.post('/signup', async function (req, res){
 })
 
 const signinBody = zod.object({
-    email: zod.string().email(),
+    email: zod.string(),
 	password: zod.string()
 })
 
