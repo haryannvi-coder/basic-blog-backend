@@ -92,4 +92,90 @@ router.get("/readBlog", async (req, res) => {
 
 })
 
+router.put("/editBlog", authMiddleware, async (req, res) => {
+    const blogId  = req.query.blogId; // Extract blogId from query parameters
+    const { title, description, content } = req.body; // Extract updated fields from request body
+
+    try {        
+        // Retrieve the blog by its ID
+        const blog = await Blog.findById(blogId);
+
+        // Check if the blog exists
+        if (!blog) {
+            return res.status(404).json({
+                msg: "Blog not found"
+            });
+        }
+
+        // Verify if the user is the owner of the blog
+        if (blog.owner.toString() !== req.userID) {
+            return res.status(403).json({
+                msg: "User not allowed to update this blog"
+            });
+        }
+
+        // Validate the new data (Assume you're using Zod for validation)
+
+        // Update the blog fields
+        blog.title = title || blog.title;
+        blog.description = description || blog.description;
+        blog.content = content || blog.content;
+
+        // Save the updated blog back to the database
+        await blog.save();
+
+        // Return the updated blog
+        res.json({
+            msg: "Blog updated successfully",
+            blog
+        });
+    } catch (error) {
+        // Handle any errors
+        res.status(500).json({
+            msg: "An error occurred while updating the blog",
+            error: error.message
+        });
+    }
+
+})
+
+router.delete("/deleteBlog", authMiddleware, async (req, res) => {
+    const blogId  = req.query.blogId; // Extract blogId from query parameters
+
+    try {        
+        // Retrieve the blog by its ID
+        const blog = await Blog.findById(blogId);
+
+        // Check if the blog exists
+        if (!blog) {
+            return res.status(404).json({
+                msg: "Blog not found"
+            });
+        }
+
+        // Verify if the user is the owner of the blog
+        if (blog.owner.toString() !== req.userID) {
+            return res.status(403).json({
+                msg: "User not allowed to delete this blog"
+            });
+        }
+
+        // Save the updated blog back to the database
+        await blog.deleteOne();
+
+        // Return the updated blog
+        res.json({
+            msg: "Blog deleted successfully",
+        });
+    } catch (error) {
+        // Handle any errors
+        res.status(500).json({
+            msg: "An error occurred while updating the blog",
+            error: error.message
+        });
+    }
+
+} )
+
+
 module.exports = router
