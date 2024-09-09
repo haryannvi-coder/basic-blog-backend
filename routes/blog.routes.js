@@ -12,8 +12,6 @@ const blogBody = zod.object({
 
 
 router.post("/addBlog", authMiddleware, async (req, res) => {
-    console.log("authentication successful");
-    console.log(req.userID, req.body);
     const { success } = blogBody.safeParse(req.body)
     if(success == false){
         res.status(404).json({
